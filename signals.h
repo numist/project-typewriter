@@ -29,7 +29,7 @@
 #include "WProgram.h"
 
 /*
- * THIS FILE DOES NOT CONTAIN ANY CONDITIONALS!
+ * THIS FILE DOES NOT CONTAIN ANY RUNTIME CONDITIONALS!
  * this is on purpose. logic does not belong here.
  */
 
