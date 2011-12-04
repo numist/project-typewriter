@@ -29,13 +29,6 @@
 
 #define DUEMILANOVE
 
-/*
- * enabling debugging by defining DEBUG doesn't so much turn on extra debugging
- * facilities so much as turn off all normal usage of the STS lamp so it can be
- * used for debugging. this is what happens when you only have one pin free.
- */
-//#define DEBUG
-
 // disables use of Serial in the reading functions
 //#define DEBUG_WRITES
 
@@ -53,7 +46,10 @@
 
 // TODO: do a final review of plswrite, maybe even improve it
 
-// pin definitions for the system status (LED) and activity status (STS)
+/*
+ * system status (LED)
+ * in the future this can be used for flow control (with STS).
+ */
 #define LED 13
 
 // measured in scans, more or less arbitrarily chosen.
@@ -144,10 +140,6 @@ struct {
  *    keycode - the keycode for the key held down
  */
 void read_keydown(uint8_t keycode) {
-#ifndef DEBUG
-  digitalWrite(STS, HIGH);
-#endif
-
   // meta key states
   if(HINIBBLE(keycode) == 0x01) {
     if(keycode == SHIFT_LOCK) {
@@ -179,10 +171,6 @@ void read_keydown(uint8_t keycode) {
  *    keycode - the keycode for the key held down
  */
 void read_keyheld(uint8_t keycode) {
-#ifndef DEBUG
-  digitalWrite(STS, HIGH);
-#endif
-
   return;
 }
 
@@ -195,10 +183,6 @@ void read_keyheld(uint8_t keycode) {
  *    keycode - the keycode for the key held down
  */
 void read_keyup(uint8_t keycode) {
-#ifndef DEBUG
-  digitalWrite(STS, LOW);
-#endif
-
   // meta key states
   if(HINIBBLE(keycode) == 0x01 && keycode != SHIFT_LOCK)
     meta_key_state &= 0x0F ^ LONIBBLE(keycode);
@@ -266,16 +250,6 @@ uint8_t read_getsignals(uint8_t scannum) {
    * multiple scans.
    */
   if(numscans > 1 && (~signs & (~signs - 1) & 0xFF)) {
-    /* TODO:
-     * right now pulling the STS low is almost immediately overridden by
-     * read_keyheld. fixing this probably involves returning a bogus value
-     * like 0x00, which is hacky, or some more shared state in the code.
-     *
-     * so for now, this does nothing.
-     */
-#ifndef DEBUG
-    digitalWrite(STS, LOW);
-#endif
     signs = signal_tracker[scannum];
   }
 
@@ -515,10 +489,6 @@ void do_write(uint8_t scans) {
   }
 
   if(writestate.character) {
-#ifndef DEBUG
-    digitalWrite(STS, HIGH);
-#endif
-
     // hold down the appropriate meta key(s)
     if(writestate.meta)
       signals &= write_metagen(writestate.meta, scans);
@@ -530,9 +500,6 @@ void do_write(uint8_t scans) {
 
     // stop holding the keys, but continue blocking writes
     if(writestate.writing == KEYPRESS_DURATION * (1 + !!writestate.meta)) {
-#ifndef DEBUG
-      digitalWrite(STS, LOW);
-#endif
       writestate.character = 0;
     }
   }
@@ -564,9 +531,8 @@ void setup(void) {
 
   /*
    * the LED pin is not connected to the typewriter's signal or scan lines
-   * because it is used as output during boot, which causes phantom keystrokes
-   * on the typewriter.  that's ok, since we're using the LED pin (along with
-   * the debug pin(2)) to emit state.
+   * because it is used as output during boot, which can cause phantom keystrokes
+   * on the typewriter.  that's ok, since we're using the LED pin to emit state.
    */
   digitalWrite(LED, HIGH);
 
@@ -611,7 +577,7 @@ void loop(void) {
    * in normal operation, the scanlines change every 2ms, with a range reliably
    * between 1950 and 2050 µs. if we've waited much longer than that for a
    * change, it is safe to assume that the typewriter is resetting and has
-   * pulled down the scanline the limit switch is on so it can respond as
+   * pulled down the scanline for the limit switch so it can respond as
    * quickly as possible when the carriage hits it.
    *
    * when this is happening we cannot be in write mode. driving the signal

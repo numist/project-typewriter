@@ -33,7 +33,7 @@
  * this is on purpose. logic does not belong here.
  */
 
-// when DEBUG is defined, STS is the debug pin
+// spare pin. this could be used with LED for hardware flow control.
 #define STS 12
 
 /*
