@@ -36,6 +36,6 @@ Credits
 
 The code in `debouncer.h` was originally provided by [Ben Holt](http://twitter.com/bjh). My modifications were mostly superficial in nature, though I did add a few optimizations.
 
-The more tricky debugging (like diagnosing the RAM overflow bug that necessitated using PROGMEM on the ATmega168) was assisted by [Beth Scott](http://scanlime.org/).
+The more tricky debugging (like diagnosing the RAM overflow bug that necessitated using PROGMEM on the ATmega168) was assisted by [Micah Scott](http://scanlime.org/).
 
 Thanks to Cindy for putting up with me when I ignored everything except my desk for a few days. Again.
